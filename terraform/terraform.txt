@@ -1,0 +1,1178 @@
+#ctrl + space = autogenrate syntex VS code
+
+#Element(list,index) 
+It works with list and index.
+
+#lookup(map,key)
+It works with map and key.
+
+#pass variable value in cli during terraform apply command-line
+terraform apply -var="rg_name=demo1" -var="rg_location=eastus" -auto-approve
+
+#export variable value to use in terraform
+export subscriptions_name = azurePoc
+export resource_group_name= myDemo
+terraform apply/plan 
+
+#lifecycle : It is Resource Meta Argument assigned at resource level.
+We can change default behavior of resources created by terraform.
+
+default behavior = destroy and recreate
+
+lifecycle{
+	create_before_destroy = true
+}
+
+lifecycle{
+	prevent_destroy = true
+}
+
+lifecycle{
+	ignore_changes = true
+}
+
+#assign variable value at prompted because there is no default value set
+variable "rg_name"{
+	description = "Resource group name"
+	type = string
+}
+
+#map variable and access in terraform
+- If varibale key value start with number i.e then map will use as ':' instead of '='
+variable "numberMap"{
+	type = map(string)
+	default = {
+	"1-sawan"  : "boy",
+	"2-muskan" : "girl"
+	}
+}
+variable "demo"{
+	type = map(string)
+	default = {
+	"name"    = "sawan"
+	"company" = "eurofins"
+	}
+}
+
+#set() varibale 
+- It is collection of Unique Values which do not have any secondary identifier and ordering
+
+- variable object() defination
+variable "environment"{
+	type = set(string)
+	default = ["DEV", "QA" , "SIT", "PROD"]
+}
+
+- variable object() decleration in .tfvars file as mentioned below
+environment = ["DEV", "QA" , "SIT", "PROD"]
+
+- variable object() accessing values
+resource "random_string" "myrandom"{
+	for_each = var.environment
+	lenght   = 6
+	upper    = false
+	special  = false
+	number   = false
+	location = azurerm_resource_group.myDemo[each.key].name
+}
+
+#create list output with for_each meta argument
+output "vnet_name_list" {
+	description = "virtual network  for loop one Input and Lists Output with VNET name"
+	value = [ for vnet in azurerm_virtual_network.myvnet: vnet.name ]
+}
+
+#create map output with for_each meta argument
+output "vnet_name_list" {
+	description = "virtual network  for loop one Input and Lists Output with VNET name"
+	value = { for vnet in azurerm_virtual_network.myvnet: vnet.id => vnet.name }
+}
+
+#regex() function for matching string
+regex("<MatchString><$>","<fullString>")
+- Check india exist at the end of string or not.
+regex("India$","eastIndia") 
+
+#can(regex()) fucntion return true or false on the basis of Regex matching 
+can(regex("India$","eastIndia"))
+- O/P : true
+can(regex("India$","east"))
+- O/P : false
+
+#Use case variable validation
+variable "rg_name"{
+	description = "Resource Group Location"
+	type = string
+	default = "eastus"
+	validation{
+		condition = can(regex("india$" , var.resource_group_location)
+		error_message = "We only allow resource location within India only"
+	}
+}
+
+#Structural type Variable
+1. Object(....)
+
+- It is equivalent to map key = value pair.
+- It is collection of named attributes that each have their own type.
+
+- variable object() defination
+variable "td_policy_mysql"{
+	description = "Azure MySQL threat Detection Policy"
+	type        = object({
+	enabled            = bool,
+	retention_days     = number,
+	email_account_admin= bool,
+	email_Address      = list(string)
+	})
+} 
+
+- variable object() decleration in .tfvars file as mentioned below
+td_policy_mysql = {
+	enabled             = true,
+	retention_days      = 10,
+	email_account_admin = true,
+	email_Address       = ["sawan.chouksey@tcs.com","1820387@tcs.com"]
+}
+
+- variable object() accessing values
+threat_detection_policy{
+	enabled            = var.td_policy_mysql.enabled
+	retention_days     = var.td_policy_mysql.retention_days
+	email_account_admin= var.td_policy_mysql.email_account_admin
+	email_Address      = var.td_policy_mysql.email_Address
+}
+
+2. tuple()
+
+- It is similar like list[sawan,srajan,10] 
+- It is collection of named attributes that each have their own type.
+
+- variable tuple() defination
+variable "td_policy_mysql"{
+	type = tuple([bool, number, bool, list(string)])
+}
+
+- variable tuple() decleration in .tfvars file as mentioned below
+	td_policy_mysql = [true, 10, true, ["sawan.chouksey@tcs.com" , "1820387@tcs.com"]]
+
+- variable tuple() accessing values
+threat_detection_policy {
+	enabled            = var.td_policy_mysql[0]
+	retention_days     = var.td_policy_mysql[1]
+	email_account_admin= var.td_policy_mysql[2]
+	email_Address      = var.td_policy_mysql[3]
+}
+
+#To access all value
+resource "azurerm_resource_group" "demoMap"{
+	for_each = var.demo
+	name     = each.value 
+}
+
+#To access specific value from key
+resource "azurerm_resource_group" "demoMap"{
+	name     = var.demo[name] 
+}
+
+#To access specific value from key by lookup function
+resource "azurerm_resource_group" "demoMap"{
+	name     = lookup(var.demo, "company" , "not found") 
+}
+
+#Version control tools supported by Terraform are:
+GitHub
+GitLab CE
+GitLab EE
+Bucket Cloud
+
+# You can save your configuration in version control and commit it before making any changes, and then use the features of your version control system to revert to an earlier configuration if necessary. You must always recommit the previous version code in order for it to be the new version in the version control system.
+
+#Private module rgistory
+Using the private module registry, Terraform Cloud users can create and confidentially share infrastructure modules within an organisation. The private module registry in Terraform Enterprise allows you to share modules within or across organisations
+
+#Some of the built-in provisioners available in Terraform are:
+abspath.
+dirname.
+pathexpand.
+basename.
+file.
+fileexists.
+fileset.
+filebase64.
+
+#terraform show
+The terraform show command is used to provide human-readable output from a state or plan file.
+
+#check and verify vulnerablity in IAC
+pip install checkov
+checkv -d /path/to/code/directory
+
+#rollback helm chart after installing at specific version
+helm rollback <Chartname> <rollbackVersion> -namespace=web
+helm rollback apache 1 -namespace=web
+
+#helm life Cycle Hook 
+Data to DB & Backing up a DB
+ 
+---------------------TERRAFORM IMPLEMENTATION----------------------------------------
+#protcol can be defined in number format in terraform
+https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xml#protocol-numbers-1
+0	HOPOPT	IPv6 Hop-by-Hop Option	Y	    [RFC8200]
+1	ICMP	Internet Control Message		[RFC792]
+2	IGMP	Internet Group Management		[RFC1112]
+3	GGP	    Gateway-to-Gateway		        [RFC823]
+4	IPv4	IPv4 encapsulation	        	[RFC2003]
+5	ST	    Stream		                    [RFC1190][RFC1819]
+6	TCP	    Transmission Control		    [RFC9293]
+7	CBT	    CBT		                        [Tony_Ballardie]
+8	EGP	    Exterior Gateway Protocol		[RFC888][David_Mills]
+{
+	protocol = -1       #any protocol
+}
+
+
+#terraform version defination in provider
+>=1.0 : greater then and equal to version
+<=1.0 : less than equal to the version
+~>2.0 : Any version in 2.X range
+>=2.0,<=2.30 : Any version between 2.10 and 2.30
+
+#count parameter to create multiple instances with same type
+resource "aws_instance" "instances-1"{
+	ami = "ami-hdgeyfte78f6fd"
+	instance_type = "t2.micro"
+	count = 5                        #create instances start from [0-4] & 0,1,2,3,4 of same type
+}
+
+#count parameter with diffrent name because same name resources cant created
+resource "aws_instance" "instances-1"{
+	ami = "ami-hdgeyfte78f6fd"
+	instance_type = "t2.micro"
+	name = "myinstance.${count.index}"  #assign each instnace name with index(0,1,2,3,4) of instnace 
+	count = 5                           #create instances start from [0-4] & 0,1,2,3,4 of same type
+}
+
+#conditional if else in terrform
+file : value.tfvars
+istest = true
+
+variable "istest"{}
+
+resource "aws_instance" "instances-1"{
+	ami = "ami-hdgeyfte78f6fd"
+	instance_type = "t2.micro" 
+	count = var.test == true ? 2:0      #if value is true then create 2 instnace else 0
+}
+
+resource "aws_instance" "instances-1"{
+	ami = "ami-hdgeyfte78f6fd"
+	instance_type = "t2.micro" 
+	count = var.test == false ? 1:0     #if value is false then create 1 instnace else 0 
+}
+
+
+#naming format in terraform
+%s -read varible name as define in order.
+    Its count depends upon the number of varibles to be used.
+locals{
+sa_name=format("sa-%s-%s-%s-001",var.reourcename,var.location,var.environment)
+sa_name=format("safs%s%s",var.reourcename,var.location)
+}
+
+#conditional access resources variable with local
+locals{
+	sa_name = "${var.name != "" ? var.name : var.default}"
+}
+
+#terraform function . terraform only support built-in function not user defined
+https://developer.hashicorp.com/terraform/language/functions
+lookup(),element()
+
+#element() use with count() with splat expression(*)
+public_ip_address_id = element(azurerm_public_ip.mypublicip[*].id,count.index)
+
+
+#open terraform cli in machine
+terraform console
+
+#terraform debugging and log
+log_level=TRACE, DEBUG, INFO, WARN or ERROR  #select any one of it
+export TF_LOG=TRACE  #log output visible in screen 
+
+#save terraform logs in file
+export TF_LOG_PATH=/path/terraform.log   #log output stored in path
+
+#Dynamic block used to construct repeatable nested block which supported inside a resource i.e define 40 ingress block in nsg
+variable "sg_port"{
+	type = list(number)
+	description = "list of ingress port"
+	default = [8200,8201,8300,9200,9500,8080]
+}
+
+resource "aws_security_group" "dynamicsg"{
+	name = "dynamice-sg"
+	description = "Ingress for vault"
+	
+	dynamic "ingress"{
+		for_each = var.sg_port
+		{
+			from_port = ingress.values
+			to_port = ingress.value
+			protocol = "tcp"
+			cidr_blocks = ["0.0.0.0/0"]
+		}
+	}
+}
+
+#splat expression is used to get a list of all the attributes i.e get the list of all IAM user created by terraform 
+resource "aws_iam_user" "lb" {
+	name = "iamuser.${count.index}"
+	count = 3
+	path = "/sys/path"
+}
+output "arns" {
+	value = aws_iam_user.lb[*].arn      #spalat expression give list of user created
+}
+
+#terraform graph is used to visualise representation of either a configuration or execution plan in image format
+terraform graph
+
+#save terraform graph output in file
+terraform graph > graph.dot
+
+#define terraform cli version in file
+terraform {
+	required_version = "< 0.11"
+}
+
+#stop querying the current state during operation like terraform plan
+terraform plan -refresh=false
+
+#zipmap terraform function : it will create a map from list of key and value
+list of keys + list of value = map(key=value)
+zipmap(["key1","key2","key3"],[4,5,6]
+o/p :
+{
+	"key1" = 4
+	"key2" = 5
+	"key4" = 6
+}
+
+#terraform comment
+#  - single line comment
+// - single line comment
+/* 
+multiline 
+comment used 
+*/
+
+#terraform provisioners
+1. local_exec : for local machine
+2. Remote_exec : for remote machine
+it is used to execute script on local machine as well as remote machine as part of creation and destruction
+i.e. create ec2 instance and install nginx server in it
+resource "aws_instance" "ec2"{
+	ami           = "ami-dhegr453656"
+	instance_type = "t2.micro"
+	key_name      = "terraform"
+	
+	#This provisioner used for execute script in remote machine
+	provisioner "remote_exec" {
+		inline = [
+			"sudo apt-get install -y nginx",
+			"sudo systemctl start nginx"
+		]
+		
+	#This provisioner used for execute script in local machine
+	provisioner "local_exec" {
+		command = "echo This is executed in local machine from where terraform executed"
+		}	
+		connection {
+			type = "ssh"
+			host = "self.public_ip"
+			user = "ec2_user"
+			password = "sawan"
+			private_key = "${file("./terraform.pem)}
+		}
+	}
+}
+
+#creation provisioner 
+It will execute only at apply time when we execute "Terraform apply" not update or any other lifecycle
+If it fails the resource marked as tainted
+It creation time provisioner fail then terraform apply itself fails
+ 
+#destroy provisioner It will execute only at destroy time when we execute "Terraform destroy"
+provisioner "local_exec" {
+		when    =  destroy
+		command = "echo This is executed in local machine from where terraform executed"
+		}
+
+#when provisioners fails Ignore the error and continue the creation and destruction
+provisioner "local_exec" {
+		when    =  destroy
+		command = "echo This is executed in local machine from where terraform executed"
+		on_failure = continue                #on_failure=fail default value which raise error and stop apply or destroy 
+}
+#null_resource used to run provisioner that not directly associated with any specific resource & associated with null_resource.
+#null_resource resoources behave like normal resources but they "don't do anything".
+#we can configure provisioner and connection details on a null resoources.
+# Create a Null Resource
+resource "null_resource" "null_copy_ssh_key_to_bastion" {
+  depends_on = [azurerm_linux_virtual_machine.bastion_host_linuxvm]
+
+#file provisioner is used to copy files and directories from the machine executing terraform to new remote resources
+#it support both both ssh and winrm type of connection
+# Connection Block for Provisioners to connect to Azure VM Instance
+  connection {
+    type = "ssh"
+    host = azurerm_linux_virtual_machine.bastion_host_linuxvm.public_ip_address
+    user = azurerm_linux_virtual_machine.bastion_host_linuxvm.admin_username
+    private_key = file("${path.module}/ssh-keys/terraform-azure.pem")
+  }
+## File Provisioner: Copies the terraform-key.pem file to /tmp/terraform-key.pem
+  provisioner "file" {
+    source = "ssh-keys/terraform-azure.pem"
+    destination = "/tmp/terraform-azure.pem"
+  }
+## Remote Exec Provisioner: Using remote-exec provisioner fix the private key permissions on Bastion Host
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chmod 400 /tmp/terraform-azure.pem"
+    ]
+  }
+}
+
+#Terrform module create resource.tf file then refrence that file with the help of module
+module "myec2"{
+	#path of the resource.tf file exist
+	source = "../../modules/ec2"
+}
+
+#define version in module
+module "myec2"{
+	#path of the resource.tf file exist
+	source = "../../modules/ec2"
+	version= "1.0.0"
+}
+
+#define variable for module
+module "myec2"{
+	#path of the resource.tf file exist
+	source = "../../modules/ec2"
+	
+	#this value is always override by child resource variable.tf value So always set default value in variable.tf in child 
+	instance_type = "t2.large"           
+}
+
+#accessing child module output by following expression
+module.<MODULE_NAME>.<OUTPUT_NAME>
+child.tf                                                         
+output "sg_id"{
+	value = aws_security_group.ec2-sg.arn                          
+}
+
+parent.tf
+module "sgmodule" {
+	source = "../../ec2/sg"
+}
+
+resource "aws_instance" "web" {
+	vpc_security_group_ids = [module.sgmodule.sg_id]
+}
+
+#We can't taint the whole module instead of doing that we can easily taint child module resources.
+
+#access output variable from module from Root module
+#value       = module.<module_name>.rsource_type
+output "root_storage_account_name" {
+  description = "storage account name"
+  value       = module.azure_static_website.storage_account_name 
+}
+
+#terraform registory 
+It is place where lot of module already exist for usage and created by terraform community
+https://registry.terraform.io/browse/modules
+
+#terraform workspace
+It will help to manage multiple environment with different set of variables
+
+#terraform workspace help command
+terraform workspace -h 
+
+#create and switch to terraform workspace
+terraform workspace new <workspace_name>
+terraform workspace new prod
+
+#switch to existing workspace
+terraform workspace select <workspace_name>
+terraform workspace select dev
+
+#check current workspace
+terraform workspace show
+
+#check workspace list available , select workspace start with '*'
+terraform workspace list
+
+#define varible and used as workspace
+variable "instance_type" {
+	type        = map
+	description = "Workspace name : Ec2 Size"
+	default = {
+		default = "t2.micro"                
+		dev     = "t2.nano"
+		prod    = "t2.large"
+	}
+}
+resource "aws_instance" "ec2" {
+	ami           = "ami-dgr4564756"
+	instance_type = lookup(var.instance_type,terraform.workspace) 
+}
+
+#terraform state file in multiple workspace
+- you should find terraform.tfstate file in "current-working-directory/terraform.tfstate.d/<workspace_name>
+cd current-working-directory/terraform.tfstate.d/dev(workspace_name)
+cat terraform.tfstate
+
+#delete workspace within all resources
+terraform workspace delete <workspace_name> -force
+terraform workspace delete dev -force
+
+#delete workspace
+terraform workspace delete dev
+
+#terraform Dynamic Block
+- You can dynamically construct repeatable nested block like setting using a specific dynamic block type , which is supported inside resources, data, providors and provisioner block.
+local {
+	ports = [22,80,8080,8081]
+}
+
+dynamic "security_rule"{
+	for_each = local.port
+	content{
+	name                   = "Inbound-rule-${security_rule.key}"   //0,1,2,3         - keyIndexForEachLoop
+	priority               = sum([100, security_rule.key])         //100,101,102,103 - 100 + KeyIndexForEachLoop
+	source_port_range      = security_rule.value                   //22,80,8080,8081 - ValueForEachLoop
+	destination_port_range = security_rule.value                   //22,80,8080.8081 - ValueForEachLoop
+	}
+} 
+
+#Terraform Sentinel Policies
+- whenever We create resources by terraform and assigned policies for creation any resources
+i.e. Enforce Mandatory tags,Restrict VM publisher, allowed providers
+
+There is already inbuild sentinel policies available in Github or hashicorp account.
+
+#We can configure Integrated terminal in Terraform Azure Extension with VSCode for Run command.
+
+
+
+
+#read text or password from a file
+password = "${file("../redis_pass.txt")}"
+
+#Terraform backend use to store State file .tfstate into various remote host like s3,azurerm etc. i.e. store in azure sa blob 
+terraform{  
+  backend "azurerm" {
+    resource_group_name   = "terraform-storage-rg"
+    storage_account_name  = "terraformstatexlrwdrzs"
+    container_name        = "tfstatefiles"
+    key                   = "terraform.tfstate"
+  }  
+}
+
+#when there is operation performed in terraform the .lock file and give error when someone trying to do write operation
+this file is automatically removed after operation completed
+.terraform.tfstate.lock.info
+
+#forcefully unlock a locked state file, LOCK_ID provided when locking the State file beforehand
+terraform force-unlock LOCK_ID
+
+#to attempt migration of the state
+terraform init -migrate-state
+
+#to store the current configuration with no chnages to the state file
+terraform init -reconfigure
+
+#modify state file in terraform
+terraform state <subCommands>
+
+#store multiple account credentails file for AWS
+[default]
+aws_access_key_id  = dkhgfdkjdshfhgddl
+aws_secret_access_key = kfdgfjshgfhlgkhfkgkdfdgk746358
+
+[account 1]
+aws_access_key_id  = dkhgfdkjdshfhgddl
+aws_secret_access_key = kfdgfjshgfhlgkhfkgkdfdgk746358
+
+[account 2]
+aws_access_key_id  = dkhgfdkjdshfhgddl
+aws_secret_access_key = kfdgfjshgfhlgkhfkgkdfdgk746358
+
+#pass different account credentials in providers 
+providers "aws" {
+	region = "east us"
+	profile = "account1"          #define account profile where you want to use
+}
+
+#use same providers in same terraform file with help of alias
+providers "aws" {
+	region = "east us"
+	profile = "account1"          #define account profile where you want to use
+}
+
+providers "aws" {
+	alias = "aws02"               #It is used while creating resources
+	region = "east us"
+	profile = "account2"          #define account profile where you want to use
+}
+
+resource "aws_eip" "myip" {
+	vpc = "true"
+	provider = "aws.aws02"
+}
+
+#hide senstive information showing in terminal etc.
+locals {
+	db_pass = {
+	admin = "pass123"
+	}
+}
+
+output "db_password" {
+	value = local.db_pass
+	sensitive  = true
+}
+
+#terraform vault to store secret
+https://developer.hashicorp.com/vault/downloads?host=www.vaultproject.io
+
+#check vault version
+vault -version
+
+#vault inbuilt dev server run
+vault server -dev
+
+#vault access from the browser
+http://127.0.0.1:8200/ui
+
+#check status of vault server
+vault status
+
+#use vault in terraform for integration prerequiste
+set VAULT_ADDR=http://127.0.0.1:8200
+echo "ROJJP5YQmmmMPKr8XU/fKQWGyaZjsbAULS4wRT2NCvs=" > unseal.key
+echo "hvs.fFkYLvFzyVXe0SLeTcYOVlCu" > root-token.txt
+set VAULT_DEV_ROOT_TOKEN_ID = hvs.fFkYLvFzyVXe0SLeTcYOVlCu
+
+#write secret in vault
+vault kv put secret/hello foo=world
+
+#get secret from vault
+vault kv get -field=excited secret/hello
+
+#delete secret from vault
+vault kv delete secret/hello
+
+#secret path is tells about engine
+secret/hello #secret is arbitary path or engine like azure,aws etc & hello is secret inside it
+
+#read data from vault by terraform
+provider "vault" {
+	address = "http://127.0.0.1:8200"
+}
+
+data "vault_generic_secret" "demo" {
+	path = "secret/db-creds"
+}
+
+output "vault_secret" {
+	value = data.vault_generic_secret.demo.data_json
+	sensitive = true
+}
+
+#terraform cloud
+Terraform Cloud enables infrastructure automation for provisioning, compliance, 
+and management of any cloud, data center, and service.
+https://cloud.hashicorp.com/products/terraform
+https://developer.hashicorp.com/terraform/cloud-docs?product_intent=terraform
+
+#use environment veraible in terraform cloud to communicate with public cloud i.e AWS,azure etc.
+
+#using workspace terraform.tfstate file created location
+terraform.tfstate.d
+
+#upgrade terraform providor
+terraform init -upgrade
+
+#the ~ symbol in terraform plan operation indicate "Update In place"
+
+
+#air gapped environment(offline) used in enterprise only
+
+
+#obtain and save API token for Terraform cloud
+terraform login
+
+#format code per HCL canonical standard
+terraform fmt
+
+#pass a variable via command-line while applying a configuration
+terraform apply -var my_region_variable=us-east-1
+
+#do not reconcile state file with real-world resources(helpful with large complex deployments for saving deployment time)
+terraform apply refresh=false
+
+#update terraform state file with remote configuration which done manually
+terraform plan -refresh-only
+terraform apply -refresh-only
+Note  : But we need to add remote configuration in terrform config file manually for sync with .tfstate file
+  
+#lock the state file so it can’t be modified by any other Terraform apply or modification action(possible only where backend allows locking)
+terraform apply -lock=true
+
+#forcefully unlock a locked state file, LOCK_ID provided when locking the State file beforehand
+terraform force-unlock LOCK_ID
+
+#number of simultaneous resource operations
+terraform apply --parallelism=5
+
+#get information about providers used in current configuration
+terraform providers
+
+#Log out of Terraform Cloud, defaults to hostname app.terraform.io
+terraform logout
+
+#download and update modules in the “root” module.
+terraform get -update=true
+
+#install and download terraform
+down the zip file from the website terraform.io
+wget http://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_linux_amd64.zip
+
+#unzip the tar
+unzip terraform_0.15.4_linux_amd64.zip
+
+#Give permission to folder
+chmod -x terraform
+
+#move to path variable
+sudo mv terraform /usr/local/bin
+
+#check with command
+terraform version
+
+#creating ssh key/certificates in windows
+NOTE : for remote host always must give public key only not private 
+-download putty
+-open puttygen
+-generate ssh key pair
+-saved the private and public key in any loaction
+-public_key save as .pub and private_key save as .ppk
+-conversation(menu)-->export openSSH key -->save as .pem file 
+
+#terraform intialize the plugins and all prerequiste like providers aws,azure,gcp etc.
+terraform init
+
+#order of the execution of command standard
+terraform refresh-->plan--make decision-->apply
+
+#terraform always read .tf file 
+-create file main.tf
+-define variable in terraform file variables.tf
+--variable "name"{
+  type = "datatype of variable"
+  default = "value of variable"
+  }
+--variable "test"{
+  type = "string"
+  default = "sawan"
+  }
+
+#access or read variable value
+-var.<var name> or "${var.var_name}"
+-var.test or "${var.test}"
+-o/p sawan
+
+#terraform have diffrent types of variable like Map{key,vale},Boolean,number,list[],set,object,tuple
+variable "test-string"{
+  type = "string"
+  }
+
+variable "test-int"{
+  type = number
+  }
+
+variable "test-boolean"{
+  type = bool
+  }
+  
+variable "test-list"{
+  type = list(number)
+  default = [1,2,3]
+  }
+  
+variable "test-map"{
+  type = map(string)
+  default ={ "key" = "value"}
+  }
+
+#Set have no sort by terraform during output and only unique value return in result
+variable "test-set"{
+  type =set(number)
+  default=[4,5,7,8,2]
+  }
+
+#object is like a map but each element have different type
+variable "test-object"{
+  name = "sawan"
+  empid = 1820387
+}
+
+#tuple is like list each element have different types
+variable "test-tuple"{
+  type = tuple
+  default = [1,"string",false]
+  }
+
+#Terraform can also decide the type of variable during run time
+
+#terraform commands documentation
+http://www.terraform.io/docs/cli/commands/validate.html
+
+#This command is used to get full list of Command used in terraform
+terraform help
+
+#This command will read all *.tf files and apply the terraform code to cloud provider that you have configured
+#Terraform output the changes after this command and ask for make the chnages.
+#The user output will be 'yes' 
+terraform apply 
+
+#we can use -auto-approve argument to automatically approve the changes without asking 
+terraform apply -auto-approve
+
+#create apply specific resource by terraform
+terraform apply target=CloudProvider_ResourceTemplateName.ResourceName
+terraform apply target=azurerm_resource_group.resource-group-name
+
+#create apply command used to single resource of file terraform
+terraform apply -target RESOURCE_TYPE.NAME -target RESOURCE_TYPE2.NAME
+
+#This command used to see what changes terroform would do without applying it and show execution plan.
+terraform plan
+
+#This command used to store the plan in file for further implementaion
+terraform plan -out <plan name>
+
+#plan specific resource by terraform
+terraform plan target=CloudProvider_ResourceTemplateName.ResourceName
+terraform plan target=azurerm_resource_group.resource-group-name
+
+#This command used to single resource of file terraform
+terraform plan -target RESOURCE_TYPE.NAME -target RESOURCE_TYPE2.NAME
+
+#This command used to run when you add new module or provider or first time you want to use terraform within a project directory
+#It help to intialize terraform project and download neccessary plugin and install it
+terraform init
+
+#This command used to remove all infrastructure you created 
+terraform destroy
+
+#This command used to show all the terraform resources created by terraform`
+terraform state list
+
+#azure provide for infrastructure is 'azurerm' plugin
+1. Create Resource group in azure main.tf
+provider "azurerm"{
+  version = "=1.35.0"
+  }
+#create a resource group
+resource "azurerm_resource_group" "demo<terraform_resrc_group>"{
+  name = "first-step-demo<for azure_resource_group>"
+  location = var.loaction<defined in var.tf file>
+  }
+  
+#command to validate to terraform template
+terraform validate
+
+#command used to refresh the state of the terraform against the real cloud resources
+terraform refresh
+
+#when terraform refresh the state file it will create the terrform backup file 
+
+#diff command used to different between old and new file state
+diff terraform.tfstate.backup terraform.tfstate
+
+#it gives you details about terraform provider using current
+terraform providers
+
+#This command to use check terraform output
+terraform output
+
+#This command to use check terraform output for specific resource
+terraform output variable_name
+
+#destroy specific resource by terraform
+terraform destroy target=CloudProvider_ResourceTemplateName.ResourceName
+terraform destroy target=azurerm_resource_group.resource-group-name
+
+#This command used to single resource of file terraform
+terraform destroy -target RESOURCE_TYPE.NAME -target RESOURCE_TYPE2.NAME
+
+#this file is used to load value by default in plan time read first this file only
+terraform.tfvars(execute automatically)
+e.g location = "eastus"
+
+#pass file name by others .tfvar to apply on ru time
+terraform plan -var-file filename.tfvars
+
+#Automatically load variables values in run time with terraform.tfvars & .auto.tfvar automatically
+-We dont need to pass file with -var-file argument it will load automatically but 
+used file name <filename.auto.tfvars>
+mysql.auto.tfvars(Just used for segregate on resources level) & terraform.tfvars(almost same)
+
+#to store secret in file(but dont checked in git) and pass as parameter var-file file
+secret.tfvars
+
+#create database schema from Terraform while creating database server
+resource "azurerm_mysql_database" "webappdb" {
+  name                = var.mysql_db_schema
+  resource_group_name = azurerm_resource_group.rg.name
+  server_name         = azurerm_mysql_server.mysql_server.name
+  charset             = "utf8"
+  collation           = "utf8_unicode_ci"
+}
+
+# Azure MySQL Firewall Rule - Allow access from Bastion Host Public IP
+resource "azurerm_mysql_firewall_rule" "mysql_fw_rule" {
+  name                = "allow-access-from-bastionhost-publicip"
+  resource_group_name = azurerm_resource_group.rg.name
+  server_name         = azurerm_mysql_server.mysql_server.name
+  start_ip_address    = azurerm_public_ip.bastion_host_publicip.ip_address
+  end_ip_address      = azurerm_public_ip.bastion_host_publicip.ip_address
+}
+
+# Azure MySQL Virtual Network Access Rule
+resource "azurerm_mysql_virtual_network_rule" "mysql_virtual_network_rule" {
+  name                = "mysql-vnet-rule"
+  resource_group_name = azurerm_resource_group.rg.name
+  server_name         = azurerm_mysql_server.mysql_server.name
+  subnet_id           = azurerm_subnet.websubnet.id
+}
+
+#combine two variable value as single value
+ex. resource-group-name=aks-sawan & environment-name=dev
+name = "${var.resource-group-name}-${var.environment-name}"
+o/p : name = "aks-sawan-dev"
+
+#due to some mis configuration we need to redeploy/replace same resource worload with terraform intial configuration 
+terraform taint <terraform_resource_providor.name_of_resource_in_file>       #get this name by terraform state list command also
+terraform taint azurerm_windows_virtual_machine.myvm
+
+#if the terraform apply command was ran then those tainted resources would be destroyed and re-created. 
+#This maybe exactly what we want to happen. However, if after reviewing the output of the terraform plan command 
+#we determine the impact of tainting the resources will not result in a desired outcome, then we can manually untaint the #resource using the terraform untaint command:
+terraform untaint <terraform_resource_providor.name_of_resource_in_file>     #get this name by terraform state list command also
+terraform untaint azurerm_windows_virtual_machine.myvm
+
+#remove resource from terraform state file
+terraform state rm <resource_name_get_by_terraform_state_list_command>
+terraform state rm azurerm_resource_group.example
+
+#import existing resource to terraform
+#first create module in file where you want to import resource
+resource "azurerm_resource_group" "example" {
+}
+
+#Import command to import existing resource into your Terraform state
+terraform import <cloud_providor_resourcename>.<module_name> /subscriptions/<SubscriptionID>/<serviceName>/<ResourceName&ID>
+terraform import azurerm_resource_group.example /subscriptions/d2e44caa-1265-4fc3-bdaf-dc76a0a5d08e/resourceGroups/poc-terraform 
+
+#run terraform show and copy the content of existing resource which you and put it in empty module you create in main.tf file
+
+#Read the secret value from azure key vault
+data "azurerm_key_vault" "terrakv" {
+  name                = "terrakv" // KeyVault name
+  resource_group_name = "mykv" // resourceGroup
+}
+
+data "azurerm_key_vault_secret" "kvsecret" {
+name = "secret" // Name of secret
+key_vault_id = data.azurerm_key_vault.terrakv.id
+}
+
+os_profile {
+computer_name  = "vm-01"
+admin_username = "testadmin"
+admin_password = data.azurerm_key_vault_secret.kvsecret.value // To get actual value
+}
+
+#resource terraform documentation "Attributes Reference"
+It is basically used to tells us about the Output using attributes or export after creation resource and used in other resource
+
+#resource terraform documentation "timeout"
+It is tells use about Time Taken to perform CRUD operation on specific resources from terraform after that its timeout
+
+#terraform dependency lock file = .terraform.lock.hcl
+We can used as version maintained as well as specific configuration
+
+#to generate random format string using Random provider like storage account name etc.
+#Terraform Block
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = ">= 2.0" 
+    }
+    random = {
+      source = "hashicorp/random"
+      version = ">= 3.0"
+    }
+  }
+}
+
+# Provider Block
+provider "azurerm" {
+ features {}          
+}
+
+# Define Local Values in Terraform
+locals {
+  owners = var.business_divsion
+  environment = var.environment
+  resource_name_prefix = "${var.business_divsion}-${var.environment}"
+  #name = "${local.owners}-${local.environment}"
+  common_tags = {
+    owners = local.owners
+    environment = local.environment
+  }
+}
+
+# Random String Resource
+resource "random_string" "myrandom" {
+  length = 6
+  upper = false 
+  special = false
+  number = false   
+}
+
+# Azure Resource Group
+resource "azurerm_resource_group" "rg" {
+  name = "${local.resource_name_prefix}-${var.resource_group_name}-${random_string.myrandom.id}"
+  location = var.resource_group_location
+}
+
+#for_each using with toSet
+for_each=toset(["sawan","real","dear"])
+name = "myrg-${each.value}"
+
+#for_each chaining
+for_each = azurerm_network_interface.myvmip         #for_Each chaining create n ip by earlier for_each
+nic = [azurerm_network_interface.myvmip[each.key].id]
+
+#for_each using with map and create nsg rule
+#Create NSG Rules
+# Locals Block for Security Rules
+locals {
+  web_inbound_ports_map = {
+    "100" : "80",            # If the key starts with a number, you must use the colon syntax ":" instead of "="
+    "110" : "443",
+    "120" : "22"
+  } 
+}
+
+resource "azurerm_network_security_rule" "web_nsg_rule_inbound" {
+  for_each = local.web_inbound_ports_map
+  name                        = "Rule-Port-${each.value}"
+  priority                    = each.key
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = each.value 
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.web_subnet_nsg.name
+}
+
+# Create SSH Key for Linux VM
+cd ssh-ekys
+ssh-keygen \
+    -m PEM \
+    -t rsa \
+    -b 4096 \
+    -C "azureuser@myserver" \
+    -f terraform-azure.pem 
+Important Note: If you give passphrase during generation, during everytime you login to VM, you also need to provide passphrase.
+
+# Files Generated after above command 
+Public Key: terraform-azure.pem.pub -> Rename as terraform-azure.pub
+Private Key: terraform-azure.pem
+
+#${path.module} is used as current working directory only
+
+#attach ssh keys to LinuxVM
+admin_ssh_key {
+    username = "azureuser"
+    public_key = file("${path.module}/ssh-keys/terraform-azure.pub")
+  }
+
+#custom_data is used to run script in VM or intall software after bootstrap the VM.
+#It should be base64 encoded also. We can use filebase64() function to read data from file and convert into base64 encoded
+custom_data = filebase64("${path.module}/app-scripts/redhat-webvm-script.sh") 
+
+#we can pass the custom_data through script also in locals{} block
+# Locals Block for custom data
+locals {
+webvm_custom_data = <<CUSTOM_DATA
+#!/bin/sh
+#sudo yum update -y
+sudo yum install -y httpd
+sudo systemctl enable httpd
+sudo systemctl start httpd  
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+sudo chmod -R 777 /var/www/html 
+sudo echo "Welcome to stacksimplify - WebVM App1 - VM Hostname: $(hostname)" > /var/www/html/index.html
+sudo mkdir /var/www/html/app1
+sudo echo "Welcome to stacksimplify - WebVM App1 - VM Hostname: $(hostname)" > /var/www/html/app1/hostname.html
+sudo echo "Welcome to stacksimplify - WebVM App1 - App Status Page" > /var/www/html/app1/status.html
+sudo echo '<!DOCTYPE html> <html> <body style="background-color:rgb(250, 210, 210);"> <h1>Welcome to Stack Simplify - WebVM APP-1 </h1> <p>Terraform Demo</p> <p>Application Version: V1</p> </body></html>' | sudo tee /var/www/html/app1/index.html
+sudo curl -H "Metadata:true" --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2020-09-01" -o /var/www/html/app1/metadata.html
+CUSTOM_DATA
+}
+
+#We can use base64encode() function to convert script into base64 encoded
+custom_data = base64encode(local.webvm_custom_data)
+
+#count.index is used to maintane the count of each instance start from 0,1,2....n(count-1) 
+${count.index}
+
+#for_each loop each is used to maintaine the count of instnace or itarator i.e. map
+${each.key} & ${each.value} & ${each.key} is also used for list iterator
+
+#To Auto-scale VMSS terraform only support "Scale based on a metrics" not "scale to specific instance count" 
+scale In & scale Out
+
+#domain_lebel in Public IP required for associated during azure traffic manager other Terraform apply will fail
+
+#SSL Certificate Block in application gateway always pass certificate data in base64 coding
+  ssl_certificate {
+    name = local.ssl_certificate_name
+    password = "testpoc"
+    data = filebase64("${path.module}/ssl-self-signed/httpd.pfx")
+  }
+
+#It will fetch the provider information and create the ".terraform.lock.hcl". It will download only that version artifact which
+mentioned or genrated in ".terraform.lock.hcl" 
+terraform providers lock
+
+
+
+
+
+
