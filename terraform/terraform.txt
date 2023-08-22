@@ -132,7 +132,7 @@ td_policy_mysql = {
 	enabled             = true,
 	retention_days      = 10,
 	email_account_admin = true,
-	email_Address       = ["sawan.chouksey@tcs.com","1820387@tcs.com"]
+	email_Address       = ["sawanchouksey@gamil.com]
 }
 
 - variable object() accessing values
